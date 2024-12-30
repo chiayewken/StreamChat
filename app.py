@@ -2,6 +2,11 @@ import anthropic
 import streamlit as st
 
 
+def reset_chat():
+    st.session_state.messages = []
+    st.rerun()
+
+
 def main():
     user = st.text_input("Model ID", value="claude-3-5-sonnet-20241022")
     password = st.text_input("API Key", type="password")
@@ -20,6 +25,10 @@ def main():
 
     # Accept user input
     if prompt := st.chat_input("What is your question?"):
+        if prompt.strip().lower() == "clear":
+            reset_chat()
+            return
+
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
         # Display user message in chat message container
@@ -52,8 +61,7 @@ def main():
 
     # Add a button to clear the conversation
     if st.button("Clear Conversation"):
-        st.session_state.messages = []
-        st.rerun()
+        reset_chat()
 
 
 if __name__ == "__main__":
