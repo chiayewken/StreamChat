@@ -8,14 +8,12 @@ def reset_chat():
 
 
 def main():
-    model_id = st.text_input("Username")
-    api_key = st.text_input("Password", type="password")
-    if not model_id:
-        model_id = "claude-3-5-sonnet-20241022"
-    if api_key:
-        client = anthropic.Anthropic(api_key=api_key)
-    else:
+    if st.query_params.get("key", "") != st.secrets["USER_KEY"]:
+        st.balloons()
         return
+
+    model_id = st.text_input("Model ID", value="claude-3-5-sonnet-20241022")
+    client = anthropic.Anthropic(api_key=st.secrets["API_KEY"])
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
