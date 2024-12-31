@@ -8,10 +8,12 @@ def reset_chat():
 
 
 def main():
-    user = st.text_input("Model ID", value="claude-3-5-sonnet-20241022")
-    password = st.text_input("API Key", type="password")
-    if password:
-        client = anthropic.Anthropic(api_key=password)
+    model_id = st.text_input("Username")
+    api_key = st.text_input("Password", type="password")
+    if not model_id:
+        model_id = "claude-3-5-sonnet-20241022"
+    if api_key:
+        client = anthropic.Anthropic(api_key=api_key)
     else:
         return
 
@@ -42,7 +44,7 @@ def main():
 
             # noinspection PyTypeChecker
             with client.messages.stream(
-                model=user,
+                model=model_id,
                 max_tokens=1024,
                 messages=[
                     {"role": m["role"], "content": m["content"]}
