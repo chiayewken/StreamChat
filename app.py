@@ -1,10 +1,49 @@
+import base64
+import io
+
 import anthropic
 import streamlit as st
+from PIL import Image
+from streamlit_paste_button import paste_image_button
 
 
 def reset_chat():
     st.session_state.messages = []
     st.rerun()
+
+
+def convert_image_to_text(image: Image.Image, form: str = "PNG") -> str:
+    # This is also how OpenAI encodes images: https://platform.openai.com/docs/guides/vision
+    with io.BytesIO() as output:
+        image.save(output, format=form)
+        data = output.getvalue()
+    return base64.b64encode(data).decode("utf-8")
+
+
+def convert_text_to_image(text: str) -> Image.Image:
+    data = base64.b64decode(text.encode("utf-8"))
+    return Image.open(io.BytesIO(data))
+
+
+def load_image_message(image: Image.Image) -> dict:
+    data = dict(
+        type="image",
+        source=dict(
+            type="base64",
+            media_type="image/webp",
+            data=convert_image_to_text(image, form="WEBP"),
+        ),
+    )
+
+    return dict(role="user", content=[data])
+
+
+def parse_image_message(message: dict) -> Image.Image:
+    if (
+        not isinstance(message["content"], str)
+        and message["content"][0]["type"] == "image"
+    ):
+        return convert_text_to_image(message["content"][0]["source"]["data"])
 
 
 def main():
@@ -21,7 +60,15 @@ def main():
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            image = parse_image_message(message)
+            if image:
+                st.image(image)
+            else:
+                st.markdown(message["content"])
+
+    paste_result = paste_image_button("📋 Paste an image")
+    if paste_result.image_data is not None:
+        st.session_state.messages.append(load_image_message(paste_result.image_data))
 
     # Accept user input
     if prompt := st.chat_input("What is your question?"):
