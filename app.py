@@ -51,7 +51,7 @@ def main():
         st.balloons()
         return
 
-    model_id = st.text_input("Model ID", value="claude-3-5-sonnet-20241022")
+    model_id = st.text_input("Model ID", value="claude-3-7-sonnet-20250219")
     client = anthropic.Anthropic(api_key=st.secrets["API_KEY"])
 
     if "messages" not in st.session_state:
